@@ -1,10 +1,10 @@
 {
   "runtime": "Net60",
-  "defaultVariables": null,
+  "defaultVariables": "SwaggerLocation=FromCommandLine",
   "documentGenerator": {
     "fromDocument": {
       "json": "",
-      "url": "http://redocly.github.io/redoc/openapi.yaml",
+      "url": "$(SwaggerLocation)",
       "output": null,
       "newLineBehavior": "Auto"
     }

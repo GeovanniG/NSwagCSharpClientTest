@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -17,11 +17,28 @@
   </ItemGroup>
 
   <PropertyGroup>
-	<RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 
-  <Target Name="NSwag" AfterTargets="PostBuildEvent" Condition=" '$(Configuration)' == 'Debug' ">
-    <Exec WorkingDirectory="$(ProjectDir)" EnvironmentVariables="ASPNETCORE_ENVIRONMENT=Development" Command="$(NSwagExe_Net60) run Client/redocly.nswag /variables:Configuration=$(Configuration)">
+  <!--<Target Name="LocalhostEnvironmentVariables" AfterTargets="PostBuildEvent" Condition="'$(ASPNETCORE_ENVIRONMENT)' == ''">
+    <PropertyGroup>
+      <ASPNETCORE_ENVIRONMENT Condition="'$(ASPNETCORE_ENVIRONMENT)'==''">Development</ASPNETCORE_ENVIRONMENT>
+    </PropertyGroup>
+  </Target>-->
+
+  <!-- NSwag Generation -->
+  <Target Name="SetOpenApiUrl" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+		<!-- In reality, this would be a localhost Url -->
+      <SwaggerLocation Condition="'$(ASPNETCORE_ENVIRONMENT)'==''">https://petstore.swagger.io/v2/swagger.json</SwaggerLocation>
+      <SwaggerLocation Condition="'$(ASPNETCORE_ENVIRONMENT)'=='Development'">https://petstore.swagger.io/v2/swagger.json</SwaggerLocation>
+      <SwaggerLocation Condition="'$(ASPNETCORE_ENVIRONMENT)'=='Staging'">http://redocly.github.io/redoc/openapi.yaml</SwaggerLocation>
+      <SwaggerLocation Condition="'$(ASPNETCORE_ENVIRONMENT)'=='Production'">https://petstore.swagger.io/v2/swagger.json</SwaggerLocation>
+    </PropertyGroup>
+  </Target>
+    
+  <Target Name="NSwag" AfterTargets="PostBuildEvent">
+    <Exec WorkingDirectory="$(ProjectDir)" Command="$(NSwagExe_Net60) run Client/redocly.nswag /variables:Configuration=$(Configuration),SwaggerLocation=$(SwaggerLocation)">
       <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode" />
       <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput" />
     </Exec>
@@ -29,5 +46,6 @@
     <Message Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' == '0'" Importance="low" />
     <Error Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' != '0'" />
   </Target>
-
+  <!-- NSwag Generation -->
+    
 </Project>
